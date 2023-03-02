@@ -64,6 +64,9 @@ class YangParseTreePaths {
   static void AddRoot(YangParseTree* tree)
       EXCLUSIVE_LOCKS_REQUIRED(tree->root_access_lock_);
 
+  static void AddSelfNode(YangParseTree* tree)
+      EXCLUSIVE_LOCKS_REQUIRED(tree->root_access_lock_);
+
  private:
   // Adds all supported paths for the specified interface.
   static TreeNode* AddSubtreeInterface(const std::string& name, uint64 node_id,

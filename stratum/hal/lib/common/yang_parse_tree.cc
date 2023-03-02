@@ -223,6 +223,7 @@ YangParseTree::YangParseTree(SwitchInterface* switch_interface)
   absl::WriterMutexLock l(&root_access_lock_);
   AddSubtreeAllInterfaces();
   AddSubtreeAllComponents();
+  AddSelfNode();
   AddRoot();
 }
 
@@ -345,6 +346,11 @@ void YangParseTree::AddRoot() {
 
   // Add root element
   YangParseTreePaths::AddRoot(this);
+}
+
+void YangParseTree::AddSelfNode() {
+  // No need to lock the mutex - it is locked by method calling this one.
+    YangParseTreePaths::AddSelfNode(this);
 }
 }  // namespace hal
 }  // namespace stratum

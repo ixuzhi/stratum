@@ -430,6 +430,7 @@ class YangParseTree {
   // Configure the root element.
   void AddRoot() EXCLUSIVE_LOCKS_REQUIRED(root_access_lock_);
 
+  void AddSelfNode() EXCLUSIVE_LOCKS_REQUIRED(root_access_lock_);
   // Returns a node that handles the YANG path.
   const TreeNode* FindNodeOrNull(const ::gnmi::Path& path) const
       LOCKS_EXCLUDED(root_access_lock_);

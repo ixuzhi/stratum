@@ -4145,6 +4145,16 @@ void YangParseTreePaths::AddSubtreeAllComponents(YangParseTree* tree) {
               });
 }
 
+void YangParseTreePaths::AddSelfNode(YangParseTree* tree) {
+  LoggingConfig log_level = GetCurrentLogLevel();
+  TreeNode* node = tree->AddNode(
+      GetPath("yusur")("config")());
+  SetUpSystemLoggingConsoleConfigSeverity(log_level, node, tree);
+  node = tree->AddNode(
+      GetPath("yusur")("state")());
+  SetUpSystemLoggingConsoleStateSeverity(node, tree);
+}
+
 void YangParseTreePaths::AddRoot(YangParseTree* tree) {
   // Add support for "/"
   SetUpRoot(tree->AddNode(GetPath()()), tree);
