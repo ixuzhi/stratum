@@ -1,0 +1,474 @@
+/*
+ * Copyright (C) 2021 Intel Corporation
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Major pieces taken from:
+ * https://github.com/ligato/cn-infra/blob/master/examples/cryptodata-proto-plugin/ipsec/ipsec.proto
+ */
+syntax = "proto3";
+package opi_api.security.v1;
+option go_package = "github.com/opiproject/opi-api/security/v1/gen/go";
+
+service IPsec {
+	rpc IPsecVersion (IPsecVersionReq) returns (IPsecVersionResp) {}
+	rpc IPsecStats   (IPsecStatsReq)   returns (IPsecStatsResp)   {}
+	rpc IPsecInitiate (IPsecInitiateReq) returns (IPsecInitiateResp) {}
+	rpc IPsecTerminate (IPsecTerminateReq) returns (IPsecTerminateResp) {}
+	rpc IPsecRekey (IPsecRekeyReq) returns (IPsecRekeyResp) {}
+	rpc IPsecListSas (IPsecListSasReq) returns (IPsecListSasResp) {}
+	rpc IPsecListConns (IPsecListConnsReq) returns (IPsecListConnsResp) {}
+	rpc IPsecListCerts (IPsecListCertsReq) returns (IPsecListCertsResp) {}
+	rpc IPsecLoadConn (IPsecLoadConnReq) returns (IPsecLoadConnResp) {}
+	rpc IPsecUnloadConn (IPsecUnloadConnReq) returns (IPsecUnloadConnResp) {}
+}
+
+/* Cryptographic algorithm for encryption */
+enum CryptoAlgorithm {
+	NONE_CRYPTO  = 0;
+	AES128       = 1;
+	AES192       = 2;
+	AES256       = 3;
+	AES128GCM128 = 4;
+	AES256GCM128 = 5;
+	AES128GMAC   = 6;
+	AES256GMAC   = 7;
+}
+/* Cryptographic algorithm for authentication */
+enum IntegAlgorithm {
+	NONE_INTEG = 0;
+	MD5        = 1;
+	MD5_128    = 2;
+	SHA1       = 3;
+	SHA1_160   = 4;
+	SHA256     = 5;
+	SHA384     = 7;
+	SHA512     = 8;
+	SHA256_96  = 9;
+}
+
+/* Diffie Hellman Groups */
+enum DiffieHellmanGroups {
+	NONE_DH_GROUP = 0;
+	MODP768      = 1;
+	MODP1024     = 2;
+	MODP1536     = 3;
+	MODP2048     = 4;
+	MODP3072     = 5;
+	MODP4096     = 6;
+	MODP6144     = 7;
+	MODP8192     = 8;
+	MODP1024S160 = 9;
+	MODP2048S224 = 10;
+	MODP2048S256 = 11;
+	CURVE25519   = 12;
+}
+
+enum PseudoRandomFunction {
+	NONE_PRF   = 0;
+	PRFMD5     = 1;
+	PRFSHA1    = 2;
+	PRFAESXCBC = 3;
+	PRFAESCMAC = 4;
+	PRFSHA256  = 5;
+	PRFSHA384  = 6;
+	PRFSHA512  = 7;
+}
+
+/* Tunnel mode */
+enum IPsecMode {
+	TUNNEL_MODE = 0;
+	TRANSPORT_MODE = 1;
+}
+
+/* Authentication Type */
+enum AuthType {
+	PUBKEY = 0;
+	PSK    = 1;
+	XAUTH  = 2;
+	EAP    = 3;
+}
+
+/* IKE_SA state */
+enum IkeSaState {
+	CREATED     = 0;
+	CONNECTING  = 1;
+	ESTABLISHED = 2;
+	PASSIVE     = 3;
+	REKEYING    = 4;
+	REKEYED     = 5;
+	DELETING    = 6;
+	DESTROYING  = 7;
+}
+
+/* CHILD_SA state */
+enum ChildSaState {
+	CHILD_CREATED    = 0;
+	CHILD_ROUTED     = 1;
+	CHILD_INSTALLING = 2;
+	CHILD_INSTALLED  = 3;
+	CHILD_UPDATING   = 4;
+	CHILD_REKEYING   = 5;
+	CHILD_REKEYED    = 6;
+	CHILD_RETRYING   = 7;
+	CHILD_DELETING   = 8;
+	CHILD_DELETED    = 9;
+	CHILD_DESTROYING = 10;
+}
+
+/* Certificate type */
+enum CertificateType {
+	CERT_X509          = 0;
+	CERT_X509_AC       = 1;
+	CERT_X509_CRL      = 2;
+	CERT_OCSP_RESPONSE = 3;
+	CERT_PUBKEY        = 4;
+}
+
+/* X.509 certificate flag */
+enum X509CertificateFlag {
+	X509_CERT_FLAG_NONE = 0;
+	X509_CERT_FLAG_CA   = 1;
+	X509_CERT_FLAG_AA   = 2;
+	X509_CERT_FLAG_OCSP = 3;
+}
+
+message Proposals {
+	repeated CryptoAlgorithm crypto_alg = 1;
+	repeated IntegAlgorithm integ_alg = 2;
+	repeated PseudoRandomFunction prf = 3;
+	repeated DiffieHellmanGroups dhgroups = 4;
+}
+
+message Vips {
+	repeated string vip = 1;
+}
+
+message Pools {
+	repeated string pool = 1;
+}
+
+message Certs {
+	repeated string cert = 1;
+}
+
+message PubKeys {
+	repeated string pubkey = 1;
+}
+
+message Groups {
+	repeated string group = 1;
+}
+
+message CertPolicy {
+	repeated string cert_policy = 1;
+}
+
+message CaCerts {
+	repeated string cacert = 1;
+}
+
+message LocalAuth {
+	AuthType auth    = 1;
+	string id        = 2;
+	string eap_id    = 3;
+	string aaa_id    = 4;
+	string xauth_id  = 5;
+	Certs certs      = 6;
+	PubKeys pubkeys  = 7;
+}
+
+message RemoteAuth {
+	AuthType auth          = 1;
+	string id              = 2;
+	string eap_id          = 3;
+	Groups groups          = 4;
+	CertPolicy cert_policy = 5;
+	Certs certs            = 6;
+	CaCerts ca_certs       = 7;
+	PubKeys pubkeys        = 8;
+}
+
+message TrafficSelectors {
+	message TrafficSelector {
+		string cidr  = 1;
+		string proto = 2;
+		string port  = 3;
+	}
+	repeated TrafficSelector ts = 1;
+}
+
+/* IP addresses or hostanmes */
+message Addrs {
+	string addr = 1;
+}
+
+/* Child SA */
+message Child {
+	string name                = 1; /* Child SA name */
+	Proposals ag_proposals     = 2;
+	Proposals esp_proposals    = 3;
+	TrafficSelectors local_ts  = 4;
+	TrafficSelectors remote_ts = 5;
+	uint32 rekey_time          = 6;
+	uint32 life_time           = 7;
+	uint32 rand_time           = 8;
+	string updown              = 9;
+	uint32 inactivity          = 10;
+	uint32 mark_in             = 11;
+	string mark_in_sa          = 12;
+	uint32 mark_out            = 13;
+	uint32 set_mark_in         = 14;
+	uint32 set_mark_out        = 15;
+	string hw_offload          = 16;
+}
+
+/* IKE connection */
+message Connection {
+	string name                 = 1; /* connection name */
+	string version              = 2;
+	repeated Addrs local_addrs  = 3;
+	repeated Addrs remote_addrs = 4;
+	uint32 local_port           = 5;
+	uint32 remote_port          = 6;
+	Proposals proposals         = 7;
+	Vips vips                   = 8;
+	uint64 dscp                 = 9; /* We use only the lower 6 bytes */
+	string encap                = 10;
+	string mobike               = 11;
+	uint32 dpd_delay            = 12;
+	uint32 dpd_timeout          = 13;
+	uint32 reauth_time          = 14;
+	uint32 rekey_time           = 15;
+	Pools pools                 = 16;
+	LocalAuth local_auth        = 17;
+	RemoteAuth remote_auth      = 18;
+	repeated Child children     = 19;
+}
+
+message IPsecVersionReq {
+	/* Intentionally empty */
+}
+
+message IPsecVersionResp {
+	string daemon  = 1;
+	string version = 2;
+	string sysname = 3;
+	string release = 4;
+	string machine = 5;
+}
+
+message IPsecStatsReq {
+	/* Intentionally empty */
+}
+
+message IPsecStatsResp {
+	string status = 1; /* Generic status string for now */
+}
+
+message IPsecInitiateReq {
+	string child    = 1;
+	string ike      = 2;
+	string timeout  = 3;
+	string loglevel = 4;
+}
+
+message IPsecInitiateResp {
+	/* Intentionally empty */
+}
+
+message IPsecTerminateReq {
+	string child    = 1;
+	string ike      = 2;
+	uint64 child_id = 3;
+	uint64 ike_id   = 4;
+	string force    = 5;
+	string timeout  = 6;
+	string loglevel = 7;
+}
+
+message IPsecTerminateResp {
+	string success    = 1;
+	uint32 matches    = 2;
+	uint32 terminated = 3;
+}
+
+message IPsecRekeyReq {
+	string child    = 1;
+	string ike      = 2;
+	uint64 child_id = 3;
+	uint64 ike_id   = 4;
+	string reauth   = 5;
+}
+
+message IPsecRekeyResp {
+	string success = 1;
+	uint32 matches = 2;
+}
+
+message IPsecListSasReq {
+	string noblock  = 1;
+	string ike      = 2;
+	uint64 ike_id   = 3;
+	string child    = 4;
+	uint64 child_id = 5;
+}
+
+message ListChildSa {
+	string name = 1;
+	string protocol = 2;
+	string encap = 3;
+	string spi_in = 4;
+	string spi_out = 5;
+	string cpi_in = 6;
+	string cpi_out = 7;
+	string mark_in = 8;
+	string mark_mask_in = 9;
+	string mark_out = 10;
+	string mark_mask_out = 11;
+	string if_id_in = 12;
+	string if_id_out = 13;
+	string encr_alg = 14;
+	string encr_keysize = 15;
+	string integ_alg = 16;
+	string integ_keysize = 17;
+	string dh_group = 18;
+	string esn = 19;
+}
+
+message ListIkeSa {
+	string name                   = 1; /* IKE_SA name */
+	string uniqueid               = 2;
+	string version                = 3;
+	IkeSaState ikestate           = 4;
+	string local_host             = 5;
+	string local_port             = 6;
+	string local_id               = 7;
+	string remote_host            = 8;
+	string remote_port            = 9;
+	string remote_id              = 10;
+	string remote_xauth_id        = 11;
+	string remote_eap_id          = 12;
+	string initiator              = 13;
+	string initiator_spi          = 14;
+	string responder_spi          = 15;
+	string nat_local              = 16;
+	string nat_remote             = 17;
+	string nat_fake               = 18;
+	string nat_any                = 19;
+	string if_id_in               = 20;
+	string if_id_out              = 21;
+	string encr_alg               = 22;
+	string encr_keysize           = 23;
+	string integ_alg              = 24;
+	string integ_keysize          = 25;
+	string prf_alg                = 26;
+	string dh_group               = 27;
+	string ppk                    = 28;
+	string established            = 29;
+	string rekey_time             = 30;
+	string reauth_time            = 31;
+	repeated string local_vips    = 32;
+	repeated string remote_vips   = 33;
+	repeated string tasks_queued  = 34;
+	repeated string tasks_active  = 35;
+	repeated string tasks_passive = 36;
+	repeated ListChildSa childsas = 37;
+}
+
+message IPsecListSasResp {
+	repeated ListIkeSa ikesas = 1;
+}
+
+message IPsecListConnsReq {
+	string ike = 1;
+}
+
+message ListConnAuth {
+	string  class          = 1;
+	string  eaptype        = 2;
+	string  eapvendor      = 3;
+	string  xauth          = 4;
+	string  revocation     = 5;
+	string  id             = 6;
+	string  ca_id          = 7;
+	string  aaa_id         = 8;
+	string  eap_id         = 9;
+	string  xauth_id       = 10;
+	Groups  group          = 11;
+	CertPolicy cert_policy = 12;
+	Certs   certs          = 13;
+	CaCerts cacerts        = 14;
+}
+
+message ListChild {
+	string           name          = 1; /* Child SA name */
+	string           mode          = 2;
+	string           label         = 3;
+	uint32           rekey_time    = 4;
+	uint32           rekey_bytes   = 5;
+	uint32           rekey_packets = 6;
+	string           dpd_action    = 7;
+	string           close_action  = 8;
+	TrafficSelectors local_ts      = 9;
+	TrafficSelectors remote_ts     = 10;
+	string           interface     = 11;
+	string           priority      = 12;
+}
+
+message ListConnResp {
+	string name                       = 1; /* Connection name */
+	repeated Addrs local_addrs        = 2;
+	repeated Addrs remote_addrs       = 3;
+	string version                    = 4;
+	uint32 reauth_time                = 5;
+	uint32 rekey_time                 = 6;
+	string unique                     = 7;
+	uint32 dpd_delay                  = 8;
+	uint32 dpd_timeout                = 9;
+	string ppk                        = 10;
+	string ppk_required               = 11;
+	repeated ListConnAuth local_auth  = 12;
+	repeated ListConnAuth remote_auth = 13;
+	repeated ListChild children       = 14;
+}
+
+message IPsecListConnsResp {
+	repeated ListConnResp connection = 1;
+}
+
+message IPsecListCertsReq {
+	string type    = 1;
+	string flag    = 2;
+	string subject = 3;
+}
+
+/* list-cert */
+message ListCert {
+	CertificateType type     = 1;
+	X509CertificateFlag flag = 2;
+	string hasprivkey        = 3;
+	string data              = 4;
+	string subject           = 5;
+	string notbefore         = 6;
+	string notafter          = 7;
+}
+
+message IPsecListCertsResp {
+	repeated ListCert certs = 1;
+}
+
+message IPsecLoadConnReq {
+	Connection connection = 1;
+}
+
+message IPsecLoadConnResp {
+	string success = 1;
+}
+
+message IPsecUnloadConnReq {
+	string name = 1;
+}
+
+message IPsecUnloadConnResp {
+	string success = 1;
+}
