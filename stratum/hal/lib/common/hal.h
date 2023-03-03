@@ -30,6 +30,7 @@
 #include "stratum/hal/lib/common/switch_interface.h"
 #include "stratum/lib/security/auth_policy_checker.h"
 #include "stratum/lib/security/credentials_manager.h"
+#include "yusur/ipsec/ipsec_service.h"
 
 namespace stratum {
 namespace hal {
@@ -146,6 +147,8 @@ class Hal final {
   std::unique_ptr<CertificateManagementService> certificate_management_service_;
   std::unique_ptr<DiagService> diag_service_;
   std::unique_ptr<FileService> file_service_;
+
+  std::unique_ptr<::yusur::IPSecService> ipsec_service_;
 
   // Unique pointer to the gRPC server serving the external RPC connections
   // serviced by ConfigMonitoringService and P4Service. Owned by the class.

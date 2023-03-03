@@ -211,6 +211,7 @@ Hal::~Hal() {
     builder.RegisterService(certificate_management_service_.get());
     builder.RegisterService(diag_service_.get());
     builder.RegisterService(file_service_.get());
+    builder.RegisterService(ipsec_service_.get());
     external_server_ = builder.BuildAndStart();
     if (external_server_ == nullptr) {
       return MAKE_ERROR(ERR_INTERNAL)
@@ -281,6 +282,7 @@ Hal* Hal::GetSingleton() {
   CHECK_IS_NULL(diag_service_);
   CHECK_IS_NULL(file_service_);
   CHECK_IS_NULL(external_server_);
+  CHECK_IS_NULL(ipsec_service_);
   // FIXME(boc) google only
   // CHECK_IS_NULL(internal_server_);
 
@@ -302,6 +304,8 @@ Hal* Hal::GetSingleton() {
       mode_, switch_interface_, auth_policy_checker_, error_buffer_.get());
   file_service_ = absl::make_unique<FileService>(
       mode_, switch_interface_, auth_policy_checker_, error_buffer_.get());
+
+  ipsec_service_ = absl::make_unique<::yusur::IPSecService>();
 
   return ::util::OkStatus();
 }
